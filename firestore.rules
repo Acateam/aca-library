@@ -1,7 +1,7 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Replace example\\.com with your company domain (e.g. dolenglish\\.vn).
+    // Replace ieltsdinhluc\\.vn with your company domain (e.g. dolenglish\\.vn).
     function companyUser() {
       return request.auth != null
         && request.auth.token.email_verified == true
@@ -53,13 +53,41 @@ service cloud.firestore {
     match /profiles/{uid} {
       allow get: if companyUser() && request.auth.uid == uid;
       allow create, update: if companyUser() && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(['nickname','avatar','defaultTeam','pins','recent'])
+        && request.resource.data.keys().hasOnly(['nickname','avatar','defaultTeam','pins','recent','bookmarkOrder'])
         && text(request.resource.data,'nickname',200) && text(request.resource.data,'defaultTeam',200)
         && (!('avatar' in request.resource.data) || (request.resource.data.avatar is int && request.resource.data.avatar >= 0 && request.resource.data.avatar < 6))
         && (!('pins' in request.resource.data) || (request.resource.data.pins is list && request.resource.data.pins.size() <= 100))
+        && (!('bookmarkOrder' in request.resource.data) || (request.resource.data.bookmarkOrder is list && request.resource.data.bookmarkOrder.size() <= 2000))
         && (!('recent' in request.resource.data) || (request.resource.data.recent is list && request.resource.data.recent.size() <= 12));
       allow list, delete: if false;
     }
+
+    // Personal bookmarks: no owner()/admin() exception here. UI roles grant NO access.
+    match /profiles/{uid}/bookmarks/{bookmarkId} {
+      function mine() { return companyUser() && request.auth.uid == uid; }
+      function validBookmark(d) {
+        return d.keys().hasOnly(['name','url','note','createdAt','updatedAt'])
+          && d.name is string && d.name.size() > 0 && d.name.size() <= 200
+          && d.url is string && d.url.size() <= 2048 && d.url.matches('^https://.+')
+          && d.note is string && d.note.size() <= 2000;
+      }
+      allow read, delete: if mine();
+      allow create: if mine() && validBookmark(request.resource.data)
+        && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time;
+      allow update: if mine() && validBookmark(request.resource.data)
+        && request.resource.data.updatedAt == request.time
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['createdAt']);
+    }
+    // Shared order only; bookmark contents are never stored in this collection.
+    match /libraryOrder/{groupId} {
+      allow read: if companyUser();
+      allow create, update: if admin()
+        && request.resource.data.keys().hasOnly(['ids','updatedAt'])
+        && request.resource.data.ids is list && request.resource.data.ids.size() <= 2000
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+    }
+
     match /roles/{email} {
       allow get: if companyUser() && (request.auth.token.email.lower() == email || owner());
       allow list: if owner();
