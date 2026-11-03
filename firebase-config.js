@@ -1,12 +1,12 @@
 // Copy the Firebase web app configuration from Firebase Console > Project settings.
 // Firebase Web API keys are public identifiers, NOT passwords. Security is enforced by firestore.rules.
 export const firebaseConfig = {
-  apiKey: "REPLACE_WITH_FIREBASE_API_KEY",
-  authDomain: "REPLACE_WITH_PROJECT_ID.firebaseapp.com",
-  projectId: "REPLACE_WITH_PROJECT_ID",
-  storageBucket: "REPLACE_WITH_PROJECT_ID.firebasestorage.app",
-  messagingSenderId: "REPLACE_WITH_SENDER_ID",
-  appId: "REPLACE_WITH_APP_ID"
+  apiKey: "AIzaSyDmMyz3BSi7Q5XthRA3_d29wuL_RvYCgPM",
+  authDomain: "aca-library.firebaseapp.com",
+  projectId: "aca-library",
+  storageBucket: "aca-library.firebasestorage.app",
+  messagingSenderId: "95836132047",
+  appId: "1:95836132047:web:f77183484f0ad3a1921dba"
 };
 // Exact company domain, without @; must match the domain in firestore.rules.
-export const COMPANY_DOMAIN = "example.com";
+export const COMPANY_DOMAIN = "ieltsdinhluc.vn";
