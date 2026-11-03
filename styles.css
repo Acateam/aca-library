@@ -15,3 +15,19 @@
 .title-link:hover,.quiet-card .title-link:hover,.category-actions .icon-button:hover{color:#1d4ed8}.category-actions .icon-button:hover,.tool-menu button:hover,.tool-menu button:focus-visible,.notice-close:hover{background:#e8f1ff}.more-button:hover,.more-button[aria-expanded=true]{background:#dbeafe!important;color:#1d4ed8}.sidebar nav button:hover:not(.active){background:#fff0f1;color:#a11e2e}.sidebar nav button.active:hover{background:#c92334;color:white}.sidebar button:focus-visible,.sidebar a:focus-visible{outline-color:#c92334}.category-toggle:hover{background:#f0f6ff}button:focus-visible,a:focus-visible{outline-color:#3b82f6}
 @media(max-width:760px){.quiet-card,.quiet-card:has(p){padding:12px 13px}.quiet-card h3 .title-link{font-size:13px}.privacy-notice{padding:10px;gap:8px}.privacy-notice p{font-size:11px}.quiet-row,.category-body .quiet-row{grid-template-columns:32px 30px minmax(0,1fr) 26px}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}.drag-ghost{will-change:auto}}
+/* Sidebar: đồng bộ tông đỏ */
+.sidebar nav button:hover:not(.active) {
+  background: #fff0f1;
+  color: #c92334;
+}
+
+.sidebar nav button.active,
+.sidebar nav button.active:hover {
+  background: #c92334;
+  color: #fff;
+}
+
+.sidebar button:focus-visible,
+.sidebar a:focus-visible {
+  outline-color: #c92334;
+}
