@@ -1,0 +1,69 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // CHANGE THIS to the actual company email domain before publishing.
+    // E.g. for email name@dolenglish.vn: '^[^@]+@dolenglish\\.vn$'
+    function companyUser() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email is string
+        && request.auth.token.email.matches('^[^@]+@example\\.com$');
+    }
+
+    function roleDoc() {
+      return /databases/$(database)/documents/roles/$(request.auth.token.email);
+    }
+    function isOwner() {
+      return companyUser() && exists(roleDoc()) && get(roleDoc()).data.role == 'owner';
+    }
+    function isAdmin() {
+      return companyUser() && exists(roleDoc())
+        && get(roleDoc()).data.role in ['owner', 'admin'];
+    }
+
+    match /nodes/{nodeId} {
+      allow read: if companyUser();
+      allow create: if isAdmin()
+        && request.resource.data.keys().hasOnly(['kind','name','parentId','url','icon','createdAt','updatedAt'])
+        && request.resource.data.kind in ['folder','link']
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 90
+        && (request.resource.data.parentId == null || request.resource.data.parentId is string)
+        && request.resource.data.icon is string
+        && request.resource.data.icon.size() <= 20
+        && request.resource.data.url is string
+        && request.resource.data.url.size() <= 2048
+        && (request.resource.data.kind == 'folder' && request.resource.data.url == ''
+            || request.resource.data.kind == 'link' && request.resource.data.url.matches('^https://.+'));
+      allow update: if isAdmin()
+        && request.resource.data.keys().hasOnly(['kind','name','parentId','url','icon','createdAt','updatedAt'])
+        && request.resource.data.kind == resource.data.kind
+        && request.resource.data.parentId == resource.data.parentId
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 90
+        && request.resource.data.icon is string
+        && request.resource.data.icon.size() <= 20
+        && request.resource.data.url is string
+        && request.resource.data.url.size() <= 2048
+        && (request.resource.data.kind == 'folder' && request.resource.data.url == ''
+            || request.resource.data.kind == 'link' && request.resource.data.url.matches('^https://.+'));
+      allow delete: if isAdmin();
+    }
+
+    match /roles/{email} {
+      // Each signed-in user can read their own role; owner can list all roles.
+      allow get: if companyUser() && (request.auth.token.email == email || isOwner());
+      allow list: if isOwner();
+      // Owner can add/remove ADMIN roles, not other owners.
+      // First owner is provisioned manually in Firebase Console.
+      allow create: if isOwner() && request.resource.data.keys().hasOnly(['role'])
+        && request.resource.data.role == 'admin'
+        && email.matches('^[^@]+@example\\.com$');
+      allow delete: if isOwner() && resource.data.role == 'admin';
+      allow update: if false;
+    }
+    match /{document=**} { allow read, write: if false; }
+  }
+}
