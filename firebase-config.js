@@ -9,4 +9,4 @@ export const firebaseConfig = {
   appId: "1:95836132047:web:f77183484f0ad3a1921dba"
 };
 // Exact company domain, without @; must match the domain in firestore.rules.
-export const COMPANY_DOMAIN = "example.com";
+export const COMPANY_DOMAIN = "ieltsdinhluc.vn";
